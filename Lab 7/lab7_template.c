@@ -15,8 +15,8 @@
 #include "open_interface.h"
 
 
-#define IR_THRESH_IN 250
-#define IR_THRESH_OUT 200
+#define IR_THRESH_IN 800
+#define IR_THRESH_OUT 740
 #define MIN_WIDTH_DEG 4
 
 #define MAX_OBJECTS 10
@@ -61,7 +61,7 @@ static int find_objects(ObjectInfo obj[], int maxObj) {
     for (ang = 0; ang <= 180; ang += 2) {
         int ir = average_ir(ang);
 
-        // Enter object — IR sees something close (higher raw val = closer)
+        // Enter object, higher raw val = closer
         if (!inObj && ir > IR_THRESH_IN) {
             inObj = true;
             startAng = ang;
@@ -156,11 +156,11 @@ void navigate_to_smallest(oi_t *sensor_data) {
     uart_sendStr(msg);
 
     // Turn to face target (90 deg = straight ahead in a 0-180 scan)
-    int turn_deg = obj[bestIdx].midPoint - 90;
+    int turn_deg = obj[bestIdx].midPoint - 80;
     if (turn_deg > 0) {
-        turn_right(sensor_data, turn_deg);
-    } else if (turn_deg < 0) {
         turn_left(sensor_data, -turn_deg);
+    } else if (turn_deg < 0) {
+        turn_right(sensor_data, turn_deg);
     }
 
     // Drive toward target, stop at 10 cm, handle bumps
@@ -211,7 +211,7 @@ void navigate_to_smallest(oi_t *sensor_data) {
 void checkPointThree(void) {
     uart_init();
     cyBOT_init_Scan(0b0111);
-    right_calibration_value = 75250;
+    right_calibration_value = 38500;
     left_calibration_value = 1351000;
 
     oi_t *sensor_data = oi_alloc();
