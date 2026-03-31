@@ -15,8 +15,8 @@
 #include "open_interface.h"
 
 
-#define THRESH_IN 90.0f // UPDATE VALUES
-#define THRESH_OUT 100.0f // UPDATE VALUES
+#define IR_THRESH_IN 250 // UPDATE VALUES
+#define IR_THRESH_OUT 200 // UPDATE VALUES
 #define MIN_WIDTH_DEG 4
 
 #define MAX_OBJECTS 10
