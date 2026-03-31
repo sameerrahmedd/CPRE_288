@@ -11,9 +11,11 @@
 #include "lcd.h"
 #include "cyBot_Scan.h"
 #include "uart.h"
+#include "open_interface.h"
 
-#define THRESH_IN 90.0f
-#define THRESH_OUT 100.0f
+
+#define THRESH_IN 90.0f // UPDATE VALUES
+#define THRESH_OUT 100.0f // UPDATE VALUES
 #define MIN_WIDTH_DEG 4
 
 #define MAX_OBJECTS 10
@@ -46,8 +48,6 @@ static int average_ir(int angle) {
     }
     return sum / 5;
 }
-
-
 
 
 static int find_objects(ObjectInfo obj[], int maxObj) {
@@ -89,7 +89,7 @@ static int find_objects(ObjectInfo obj[], int maxObj) {
         }
     }
 
-    // Handle object still open at 180°
+    // If Object is 180 degrees
     if (inObj && objCount < maxObj) {
         int endAng = 180;
         int width = endAng - startAng;
@@ -126,6 +126,80 @@ static int smallestWidthObj(ObjectInfo obj[], int count) {
     return best;
 }
 
+void navigate_to_smallest(oi_t *sensor_data) {
+    // Scan and find objects
+    ObjectInfo obj[MAX_OBJECTS];
+    int count = find_objects(obj, MAX_OBJECTS);
+
+    if (count == 0) {
+        uart_sendStr("No objects found.\r\n");
+        return;
+    }
+
+    // Print all objects
+    int i;
+    for (i = 0; i < count; i++) {
+        char line[120];
+        sprintf(line,
+            "Obj %d: mid=%3d deg, dist=%6.2f cm, radial=%3d deg, linear=%6.2f cm\r\n",
+            obj[i].id, obj[i].midPoint, obj[i].distCm,
+            obj[i].radialWidth, obj[i].linearWidth);
+        uart_sendStr(line);
+    }
+
+    // Find smallest width object
+    int bestIdx = smallestWidthObj(obj, count);
+    char msg[64];
+    sprintf(msg, "Targeting Obj %d at %d deg, %.2f cm away\r\n",
+            obj[bestIdx].id, obj[bestIdx].midPoint, obj[bestIdx].distCm);
+    uart_sendStr(msg);
+
+    // Turn to face target (90 deg = straight ahead in a 0-180 scan)
+    int turn_deg = obj[bestIdx].midPoint - 90;
+    if (turn_deg > 0) {
+        turn_right(sensor_data, turn_deg);
+    } else if (turn_deg < 0) {
+        turn_left(sensor_data, -turn_deg);
+    }
+
+    // Drive toward target, stop at 10 cm, handle bumps
+    while (obj[bestIdx].distCm > 10.0f) {
+        // Move forward in small increments
+        move_forward(sensor_data, 100); // 100 mm = 10 cm per step
+
+        // Check bump sensors
+        oi_update(sensor_data);
+        if (sensor_data->bumpLeft || sensor_data->bumpRight) {
+            uart_sendStr("Bump detected! Avoiding...\r\n");
+
+            // Back up
+            move_backward(sensor_data, -200);
+
+            // Turn away from bump
+            if (sensor_data->bumpLeft) {
+                turn_right(sensor_data, 45);
+            } else {
+                turn_left(sensor_data, 45);
+            }
+
+            // Move around obstacle
+            move_forward(sensor_data, 300);
+            turn_left(sensor_data, 45);
+        }
+
+        // Re-scan to update distance to target
+        count = find_objects(obj, MAX_OBJECTS);
+        bestIdx = smallestWidthObj(obj, count);
+        if (count == 0) {
+            uart_sendStr("Lost target, rescanning...\r\n");
+            return;
+        }
+    }
+
+    oi_setWheels(0, 0);
+    uart_sendStr("Reached target!\r\n");
+}
+
 
 void checkPointThree(void) {
     uart_init();
@@ -133,30 +207,10 @@ void checkPointThree(void) {
     right_calibration_value = 75250;
     left_calibration_value = 1351000;
 
-    ObjectInfo obj[MAX_OBJECTS];
-    int count = find_objects(obj, MAX_OBJECTS);
+    oi_t *sensor_data = oi_alloc();
+    oi_init(sensor_data);
 
-    uart_send_str("Objects Found: \r\n");
+    navigate_to_smallest(sensor_data);
 
-    int i;
-    for(i = 0; i < count; i++) {
-        char line[120];
-                sprintf(line,
-                "Obj %d: mid=%3d deg, dist=%6.2f cm, radial=%3d deg, linear=%6.2f cm\r\n",
-                obj[i].id, obj[i].midPoint, obj[i].distCm, obj[i].radialWidth, obj[i].linearWidth);
-                uart_send_str(line);
-            }
-
-            int bestIdx = smallestWidthObj(obj, count);
-
-            if(bestIdx >= 0){
-                char msg[64];
-                sprintf(msg, "Smallest: Obj %d at %d deg\r\n", obj[bestIdx].id, obj[bestIdx].midPoint);
-                uart_send_str(msg);
-                
-            } else {
-                uart_send_str("No objects detected.\r\n");
-            }
-
-
+    oi_free(sensor_data);
 }
