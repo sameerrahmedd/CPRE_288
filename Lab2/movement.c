@@ -24,6 +24,11 @@ double move_forward (oi_t *sensor_data, double distance_mm) {
             oi_update(sensor_data);
             sum += sensor_data -> distance; // use -> notation since pointer
             lcd_printf("%f", sum);
+
+           if (sensor_data->bumpLeft || sensor_data->bumpRight) {
+              oi_setWheels(0, 0);  // stop
+              return sum;          // return early
+          }
         }
         oi_setWheels(0,0); //stop
 
