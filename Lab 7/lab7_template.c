@@ -10,7 +10,7 @@
 #include <math.h>
 #include "lcd.h"
 #include "cyBot_Scan.h"
-#include "cyBot_uart.h"
+#include "uart.h"
 
 #define THRESH_IN 90.0f
 #define THRESH_OUT 100.0f
@@ -32,10 +32,8 @@ typedef struct {
 
 
 static void uart_send_str(const char *s) {
-    while(*s) {
-        cyBot_sendByte(*s++);
-        }
-    }
+    uart_sendStr(s);
+}
 
 
 static int average_ir(int angle) {
@@ -130,6 +128,7 @@ static int smallestWidthObj(ObjectInfo obj[], int count) {
 
 
 void checkPointThree(void) {
+    uart_init();
     cyBOT_init_Scan(0b0111);
     right_calibration_value = 75250;
     left_calibration_value = 1351000;
