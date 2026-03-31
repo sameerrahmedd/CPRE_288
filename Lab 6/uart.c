@@ -70,29 +70,29 @@ void uart_init(void)
 
 }
 
-//void uart_sendChar(char data){
-//    while(UART1_FR_R & 0x20) {}
-//    UART1_DR_R = data;
-//}
-//
-//char uart_receive(void){
-//    while(UART1_FR_R & 0x10) {}
-//        return (char)(UART1_DR_R & 0xFF);
-//}
-//
-//int uart_receive_nonblocking(void) {
-//    if(UART1_FR_R & 0x10) {
-//        return -1;
-//    }
-//    return (UART1_DR_R & 0xFF);
-//
-//}
-//
-//void uart_sendStr(const char *data){
-//    //TODO for reference see lcd_puts from lcd.c file
-//    while(*data) {
-//        uart_sendChar(*data);
-//        lcd_puts(*data);
-//        data++;
-//    }
-//}
+void uart_sendChar(char data){
+    while(UART1_FR_R & 0x20) {}
+    UART1_DR_R = data;
+}
+
+char uart_receive(void){
+    while(UART1_FR_R & 0x10) {}
+        return (char)(UART1_DR_R & 0xFF);
+}
+
+int uart_receive_nonblocking(void) {
+    if(UART1_FR_R & 0x10) {
+        return -1;
+    }
+    return (UART1_DR_R & 0xFF);
+
+}
+
+void uart_sendStr(const char *data){
+    //TODO for reference see lcd_puts from lcd.c file
+    while(*data) {
+        uart_sendChar(*data);
+        lcd_puts(*data);
+        data++;
+    }
+}
