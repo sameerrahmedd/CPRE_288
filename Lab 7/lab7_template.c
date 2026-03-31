@@ -11,6 +11,7 @@
 #include "lcd.h"
 #include "cyBot_Scan.h"
 #include "uart.h"
+#include "movement.h"
 #include "open_interface.h"
 
 
@@ -193,6 +194,12 @@ void navigate_to_smallest(oi_t *sensor_data) {
         if (count == 0) {
             uart_sendStr("Lost target \r\n");
             return;
+        }
+        int retarget_deg = obj[bestIdx].midPoint - 90;
+        if(retarget_deg > 0){
+            turn_right(sensor_data, retarget_deg);
+        } else if(retarget_deg < 0) {
+            turn_left(sensor_data, -retarget_deg);
         }
     }
 
