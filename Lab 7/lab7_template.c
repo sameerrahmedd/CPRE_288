@@ -170,7 +170,7 @@ void navigate_to_smallest(oi_t *sensor_data) {
         // Check bump sensors
         oi_update(sensor_data);
         if (sensor_data->bumpLeft || sensor_data->bumpRight) {
-            uart_sendStr("Bump detected! Avoiding...\r\n");
+            uart_sendStr("Bump detected \r\n");
 
             // Back up
             move_backward(sensor_data, -200);
@@ -191,7 +191,7 @@ void navigate_to_smallest(oi_t *sensor_data) {
         count = find_objects(obj, MAX_OBJECTS);
         bestIdx = smallestWidthObj(obj, count);
         if (count == 0) {
-            uart_sendStr("Lost target, rescanning...\r\n");
+            uart_sendStr("Lost target \r\n");
             return;
         }
     }
