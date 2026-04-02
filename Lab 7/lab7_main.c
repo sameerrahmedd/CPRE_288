@@ -22,13 +22,13 @@ int main(void)
     lcd_init();
     uart_init();
     cyBOT_init_Scan(0b0111);
-    right_calibration_value = 91000;
-    left_calibration_value = 1456000;
+    // cyBOT_SERVO_cal(); //Only uncomment when calibrating a new CyBot.
+    right_calibration_value = 91000; //Change Values Based on CyBot
+    left_calibration_value = 1456000; //Change Values Based on CyBot
     lcd_clear();
     lcd_puts("Press m key");
     int byte = uart_receive();
-    //lcd_clear();
-   // lcd_puts("Scanning");
+
 
 
         lcd_clear();
