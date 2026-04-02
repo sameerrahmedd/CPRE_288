@@ -184,7 +184,7 @@ void navigate_to_smallest(oi_t *sensor_data) {
             uart_sendStr("Bump detected \r\n");
 
             // Back up
-            move_backward(sensor_data, -200); //Check to see if this value should be negative or positive.
+            move_backward(sensor_data, -200); //Supposed to be a negative number.
 
             // Turn away from bump, go forward and re-turn
             if (sensor_data->bumpLeft) {
