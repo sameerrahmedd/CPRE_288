@@ -1,0 +1,4 @@
+Update THRESH_IN and THRES_OUT values. (look back to project files to see, it should be around 250 for IN and 200 for OUT). **DONE**
+Get uart.c and uart.h in the directory, from lab 6 (updated one). **DONE**
+Get movement.c and movement.h in the directory, from lab 2 (updated one). DONE
+Get open_interface.c and open_interface.h in the directory, from lab 2. DONE
