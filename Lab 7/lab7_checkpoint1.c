@@ -182,14 +182,16 @@ void navigate_to_smallest(oi_t *sensor_data) {
         distanceToObj -= 10;
         //Updates sensors after moving forward a certain distance.
         oi_update(sensor_data);
+
+        //If updated distance is less than or equal to 10 cm, then stop cybot and quit out.
         if(distanceToObj <= 10.0){
+            oi_setWheels(0, 0);
+            uart_sendStr("Reached target!\r\n");
             return;
 
         }
+
         //If robot gets bumped, detect it, and move around.
-
-
-
         if (sensor_data->bumpLeft || sensor_data->bumpRight) {
             if(sensor_data->bumpLeft){
                 uart_sendStr("Bump detected \r\n");
@@ -223,8 +225,8 @@ void navigate_to_smallest(oi_t *sensor_data) {
         }
     }
 
-    oi_setWheels(0, 0);
-    uart_sendStr("Reached target!\r\n");
+
+
 }
 
 
