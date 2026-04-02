@@ -158,15 +158,19 @@ void navigate_to_smallest(oi_t *sensor_data) {
     // Turn to face target (90 deg = straight ahead in a 0-180 scan)
     int turn_deg = obj[bestIdx].midPoint - 80;
     if (turn_deg > 0) {
-        turn_left(sensor_data, -turn_deg);
-    } else if (turn_deg < 0) {
         turn_right(sensor_data, turn_deg);
+    } else if (turn_deg < 0) {
+        turn_left(sensor_data, -turn_deg);
     }
 
     // Drive toward target, stop at 10 cm, handle bumps
     while (obj[bestIdx].distCm > 10.0f) {
-        // Move forward in small increments
-        move_forward(sensor_data, 100); // 100 mm = 10 cm per step
+        //Dispaly how far till target
+        char msg[64];
+        sprintf(msg, "Distance to target %.2f cm\r\n", obj[bestIdx].distCm);
+        uart_sendStr(msg);
+        
+        move_forward(sensor_data, 100); // Move forward 100 mm
 
         // Check bump sensors
         oi_update(sensor_data);
@@ -176,30 +180,32 @@ void navigate_to_smallest(oi_t *sensor_data) {
             // Back up
             move_backward(sensor_data, -200);
 
-            // Turn away from bump
+            // Turn away from bump, go forward and re-turn
             if (sensor_data->bumpLeft) {
                 turn_right(sensor_data, 45);
+                move_forward(sensor_data, 300);
+                turn_left(sensor_data, 45);
             } else {
                 turn_left(sensor_data, 45);
+                move_forward(sensor_data, 300);
+                turn_right(sensor_data, 45);
             }
+        
 
-            // Move around obstacle
-            move_forward(sensor_data, 300);
-            turn_left(sensor_data, 45);
-        }
-
-        // Re-scan to update distance to target
-        count = find_objects(obj, MAX_OBJECTS);
-        bestIdx = smallestWidthObj(obj, count);
-        if (count == 0) {
-            uart_sendStr("Lost target \r\n");
-            return;
-        }
-        int retarget_deg = obj[bestIdx].midPoint - 90;
-        if(retarget_deg > 0){
-            turn_right(sensor_data, retarget_deg);
-        } else if(retarget_deg < 0) {
-            turn_left(sensor_data, -retarget_deg);
+            // Re-scan to update distance to target
+            count = find_objects(obj, MAX_OBJECTS);
+            bestIdx = smallestWidthObj(obj, count);
+            if (count == 0) {
+                uart_sendStr("Lost target \r\n");
+                return;
+            }
+            int retarget_deg = obj[bestIdx].midPoint - 90;
+            if(retarget_deg > 0){
+                turn_right(sensor_data, retarget_deg);
+            } else if(retarget_deg < 0) {
+                turn_left(sensor_data, -retarget_deg);
+            }
+            continue;
         }
     }
 
