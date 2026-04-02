@@ -21,7 +21,7 @@
 
 #define MAX_OBJECTS 10
 
-
+//Struct to define all variables needed.
 typedef struct {
     int id;
     int startAngle;
@@ -33,12 +33,9 @@ typedef struct {
 } ObjectInfo;
 
 
+//Method to send messaged to Putty. To do create new char msg[*correlated bits*], then sprintf(msg, "MESSAGE", variables used in msg), then uart_sendStr();
 
-static void uart_send_str(const char *s) {
-    uart_sendStr(s);
-}
-
-
+//Method to average the IR values. 
 static int average_ir(int angle) {
     cyBOT_Scan_t scan;
     int sum = 0;
@@ -50,7 +47,7 @@ static int average_ir(int angle) {
     return sum / 5;
 }
 
-
+//Method to scan and find all objects.
 static int find_objects(ObjectInfo obj[], int maxObj) {
     cyBOT_Scan_t scan;
     int objCount = 0;
@@ -113,31 +110,38 @@ static int find_objects(ObjectInfo obj[], int maxObj) {
     return objCount;
 }
 
+//Method that finds the smallest Object to navigate towards.
 static int smallestWidthObj(ObjectInfo obj[], int count) {
+    //Return -1 if there are no objects. 
     if(count == 0) {
         return -1;
     }
     int best = 0;
     int i;
+    
+    //Goes through each object and determines which one has the smallest linear width
+    // After going through each object whichever object is the smallest turns into the "best" object aka smallest.
     for(i = 0; i < count; i++) {
         if(obj[i].linearWidth < obj[best].linearWidth) {
             best = i;
         }
     }
-    return best;
+    return best; //Returns the object number of the smallest object.
 }
 
+//Method to navigate towards the smallest object.
 void navigate_to_smallest(oi_t *sensor_data) {
     // Scan and find objects
     ObjectInfo obj[MAX_OBJECTS];
-    int count = find_objects(obj, MAX_OBJECTS);
+    int count = find_objects(obj, MAX_OBJECTS); //Doing count = find_objects(obj, MAX_OBJECTS); at anytime in the code will cause the robot to start scannig for objects.
 
+    //If there are no objects, send to Putty and "quit" out of method.
     if (count == 0) {
         uart_sendStr("No objects found.\r\n");
         return;
     }
 
-    // Print all objects
+    // For each object that is found, print out all neccessary info.
     int i;
     for (i = 0; i < count; i++) {
         char line[120];
@@ -148,22 +152,23 @@ void navigate_to_smallest(oi_t *sensor_data) {
         uart_sendStr(line);
     }
 
-    // Find smallest width object
-    int bestIdx = smallestWidthObj(obj, count);
+    
+    int bestIdx = smallestWidthObj(obj, count); //Best Index aka the Object number that is the smallest object.
+    //Send to putty which object it is targeting. (More for double checking purposes).
     char msg[64];
     sprintf(msg, "Targeting Obj %d at %d deg, %.2f cm away\r\n",
             obj[bestIdx].id, obj[bestIdx].midPoint, obj[bestIdx].distCm);
     uart_sendStr(msg);
 
-    // Turn to face target (90 deg = straight ahead in a 0-180 scan)
-    int turn_deg = obj[bestIdx].midPoint - 80;
+    // Turn to face target (if object is at degree > than 90 degrees then it should turn left).
+    int turn_deg = obj[bestIdx].midPoint - 90;
     if (turn_deg > 0) {
-        turn_right(sensor_data, turn_deg);
+        turn_left(sensor_data, turn_deg);
     } else if (turn_deg < 0) {
-        turn_left(sensor_data, -turn_deg);
+        turn_right(sensor_data, -turn_deg);
     }
 
-    // Drive toward target, stop at 10 cm, handle bumps
+    // Drive toward target, stop  10 cm before hitting
     while (obj[bestIdx].distCm > 10.0f) {
         //Dispaly how far till target
         char msg[64];
@@ -172,13 +177,14 @@ void navigate_to_smallest(oi_t *sensor_data) {
         
         move_forward(sensor_data, 100); // Move forward 100 mm
 
-        // Check bump sensors
+        // Check bump sensors every 100 mm
         oi_update(sensor_data);
+        //If robot gets bumped, detect it, and move around.
         if (sensor_data->bumpLeft || sensor_data->bumpRight) {
             uart_sendStr("Bump detected \r\n");
 
             // Back up
-            move_backward(sensor_data, -200);
+            move_backward(sensor_data, -200); //Check to see if this value should be negative or positive.
 
             // Turn away from bump, go forward and re-turn
             if (sensor_data->bumpLeft) {
@@ -200,10 +206,10 @@ void navigate_to_smallest(oi_t *sensor_data) {
                 return;
             }
             int retarget_deg = obj[bestIdx].midPoint - 90;
-            if(retarget_deg > 0){
-                turn_right(sensor_data, retarget_deg);
-            } else if(retarget_deg < 0) {
-                turn_left(sensor_data, -retarget_deg);
+            if (retarget_deg > 0) {
+                turn_left(sensor_data, retarget_deg);
+            } else if (retarget_deg < 0) {
+                turn_right(sensor_data, -retarget_deg);
             }
             continue;
         }
