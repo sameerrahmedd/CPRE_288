@@ -86,9 +86,11 @@ void ping_trigger (void){
     GPIO_PORTB_DIR_R |= 0x08;
 	timer_waitMicros(0x02);
 	
-	GPIO_PORTB_DATA_R |= 0x08;
+	GPIO_PORTB_DIR_R |= 0x08;
+	timer_waitMicros(0x02);         // <-- PB3 direction set, but never written LOW
+	GPIO_PORTB_DATA_R |= 0x08;     // high
 	timer_waitMicros(0x05);
-	GPIO_PORTB_DATA_R &= ~0x08;
+	GPIO_PORTB_DATA_R &= ~0x08;    // low
 
     // Clear an interrupt that may have been erroneously triggered
     TIMER3_ICR_R = 0x00000400;
@@ -96,7 +98,7 @@ void ping_trigger (void){
     // Re-enable alternate function, timer interrupt, and timer
     GPIO_PORTB_AFSEL_R |= 0x08;
 	GPIO_PORTB_PCTL_R &= 0xFFFF0FFF;
-    GPIO_PORTB_PCTL_R |= 0x00007000;
+	GPIO_PORTB_PCTL_R |= 0x00007000;
 	
     TIMER3_IMR_R |= 0x00000400;
     TIMER3_CTL_R |= 0x0100;
