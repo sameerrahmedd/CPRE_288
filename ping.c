@@ -6,6 +6,7 @@
 
 #include "ping.h"
 #include "Timer.h"
+#include "tm4c123gh6pm.h"
 //Include tm4c macro header file here 
 
 // Global shared variables
