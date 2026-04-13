@@ -74,32 +74,37 @@ void ping_init (void){
     TIMER3_CTL_R |= 0x00000100;
 }
 
-void ping_trigger (void){
+void ping_trigger(void) {
     g_state = LOW;
-    // Disable timer and disable timer interrupt
+
+    // Disable timer and timer interrupt
     TIMER3_CTL_R &= ~0x0100;
     TIMER3_IMR_R &= ~0x00000400;
+
     // Disable alternate function (disconnect timer from port pin)
     GPIO_PORTB_AFSEL_R &= ~0x08;
-	
-	//low-high-low trigger pulse on PB3
-    GPIO_PORTB_DIR_R |= 0x08;
-	timer_waitMicros(0x02);
-	
-	GPIO_PORTB_DIR_R |= 0x08;
-	timer_waitMicros(0x02);         // <-- PB3 direction set, but never written LOW
-	GPIO_PORTB_DATA_R |= 0x08;     // high
-	timer_waitMicros(0x05);
-	GPIO_PORTB_DATA_R &= ~0x08;    // low
 
-    // Clear an interrupt that may have been erroneously triggered
+    // Configure PB3 as GPIO output
+    GPIO_PORTB_DIR_R |= 0x08;
+
+    // Low-high-low trigger pulse on PB3
+    GPIO_PORTB_DATA_R &= ~0x08;  // explicitly drive low first
+    timer_waitMicros(2);
+    GPIO_PORTB_DATA_R |= 0x08;   // drive high
+    timer_waitMicros(5);
+    GPIO_PORTB_DATA_R &= ~0x08;  // drive low again
+
+    // Clear any erroneously triggered interrupt
     TIMER3_ICR_R = 0x00000400;
-	
+
+    // Set PB3 back to input before handing to timer
+    GPIO_PORTB_DIR_R &= ~0x08;
+
     // Re-enable alternate function, timer interrupt, and timer
     GPIO_PORTB_AFSEL_R |= 0x08;
-	GPIO_PORTB_PCTL_R &= 0xFFFF0FFF;
-	GPIO_PORTB_PCTL_R |= 0x00007000;
-	
+    GPIO_PORTB_PCTL_R &= 0xFFFF0FFF;
+    GPIO_PORTB_PCTL_R |= 0x00007000;
+
     TIMER3_IMR_R |= 0x00000400;
     TIMER3_CTL_R |= 0x0100;
 }
