@@ -35,6 +35,7 @@ int main(){
 	lcd_init();
 	button_init();
 	servo_init();
+	ping_init();
 	
 	//CP1
 	lcd_printf("90 Degrees");
