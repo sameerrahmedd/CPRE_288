@@ -16,24 +16,34 @@ int main(){
 	lcd_init();
 	button_init();
 	servo_init();
-	
+
 	//CP1
-	lcd_printf("90 Degrees");
-	servo_move(90);
-	
-	lcd_printf("90 Degrees");
-	servo_move(30);
-	
-	lcd_printf("90 Degrees");
-	servo_move(150);
-	
-	lcd_printf("90 Degrees");
-	servo_move(90);
-	
-	while(1){} //Hold at 90 for checkpoint 1
-	
 	/*
+	while(1){
+	    lcd_printf("Starting...");
+	    timer_waitMillis(1000);
+
+	    lcd_printf("90");
+	    servo_move(90);
+	    timer_waitMillis(1000);
+	
+	    lcd_printf("30");
+	    servo_move(30);
+	    timer_waitMillis(1000);
+
+	    lcd_printf("150");
+	    servo_move(150);
+	    timer_waitMillis(1000);
+	
+	    lcd_printf("Stay at last 90");
+	    servo_move(90);
+	    timer_waitMillis(5000);
+	}
+	*/
+
+
 	//CP2
+	/*
 	servo_move(degrees);
 	while(1){
 		sprintf(line, "M:%lu D:%s", servo_get_current_match(), ccw_direction ? "CCW" : "CW");
@@ -76,9 +86,19 @@ int main(){
 	}
 	*/
 	
+
 	//CP3
-	//servo_calibrate();
-	
+	/*
+	servo_calibrate();
+	while(1){
+	    servo_move(45);
+	    timer_waitMillis(500);
+	    servo_move(90);
+	    timer_waitMillis(500);
+	    servo_move(135);
+	    timer_waitMillis(500);
+	}
+	*/
+
 	//CP4 test with lab simple scan like lab 3
 }
-
