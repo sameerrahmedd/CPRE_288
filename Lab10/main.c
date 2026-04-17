@@ -5,25 +5,6 @@
 #include "servo.h"
 #include "REF_tm4c123gh6pm.h"
 #include "button.h"
-#include "ping.h"
-
-
-void scan(float distances[], int num_steps) {
-    int i;
-    int angle;
-    int step = 180 / (num_steps - 1);
-
-    for (i = 0; i < num_steps; i++) {
-        angle = i * step;
-        servo_move(angle);
-        
-        uint32_t pulse = ping_getPulseWidth();
-        distances[i] = ping_getDistance(pulse);
-        
-        lcd_printf("Angle: %d\nDist: %.2f cm", angle, distances[i]);
-    }
-}
-
 
 int main(){
 	uint16_t degrees = 90;
@@ -35,16 +16,15 @@ int main(){
 	lcd_init();
 	button_init();
 	servo_init();
-	ping_init();
 	
 	//CP1
 	lcd_printf("90 Degrees");
 	servo_move(90);
 	
-	lcd_printf("30 Degrees");
+	lcd_printf("90 Degrees");
 	servo_move(30);
 	
-	lcd_printf("150 Degrees");
+	lcd_printf("90 Degrees");
 	servo_move(150);
 	
 	lcd_printf("90 Degrees");
@@ -100,8 +80,5 @@ int main(){
 	//servo_calibrate();
 	
 	//CP4 test with lab simple scan like lab 3
-	//float distances[19]; // e.g. 10 degree steps = 19 readings
-	//scan(distances, 19);
-	//servo_move(90); // return to center
 }
 
