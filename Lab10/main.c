@@ -5,6 +5,7 @@
 #include "servo.h"
 #include "REF_tm4c123gh6pm.h"
 #include "button.h"
+#include "ping.h"
 
 
 void scan(float distances[], int num_steps) {
