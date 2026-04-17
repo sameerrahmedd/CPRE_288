@@ -21,10 +21,10 @@ int main(){
 	lcd_printf("90 Degrees");
 	servo_move(90);
 	
-	lcd_printf("90 Degrees");
+	lcd_printf("30 Degrees");
 	servo_move(30);
 	
-	lcd_printf("90 Degrees");
+	lcd_printf("150 Degrees");
 	servo_move(150);
 	
 	lcd_printf("90 Degrees");
