@@ -21,6 +21,10 @@ static uint32_t servo_max_match = 288000; // 180 degrees
 static uint16_t current_degrees = 90;
 static uint32_t current_match   = 296000;
 
+
+//Helper Methods
+
+
 // Write 24-bit match value split across two registers
 static void write_match(uint32_t match) {
     TIMER1_TBMATCHR_R = (match & 0xFFFF);
