@@ -31,66 +31,43 @@ static void write_match(uint32_t match) {
     TIMER1_TBPMR_R    = ((match >> 16) & 0xFF);
 }
 
-void wait_for_release(void) {
-    while (button_getButton() != 0) {}
-    timer_waitMillis(150);
-}
-
 void servo_set_calibration(uint32_t right_match, uint32_t left_match) {
     servo_min_match = right_match;
     servo_max_match = left_match;
 }
 
-uint16_t servo_get_current_degrees(void) {
-    return current_degrees;
-}
-
-uint32_t servo_get_current_match(void) {
-    return current_match;
-}
-
 uint32_t servo_get_match_from_degrees(uint16_t degrees) {
     if (degrees > 180) degrees = 180;
-    // Linear interpolation: at 0 deg -> servo_min_match, at 180 deg -> servo_max_match
     return servo_min_match + ((servo_max_match - servo_min_match) * (uint32_t)degrees) / 180;
 }
 
 void servo_init(void) {
-    // Step 1: Enable clocks
-    SYSCTL_RCGCTIMER_R |= 0x02; // Timer1
-    SYSCTL_RCGCGPIO_R  |= 0x02; // Port B
+    SYSCTL_RCGCTIMER_R |= 0x02;
+    SYSCTL_RCGCGPIO_R  |= 0x02;
     while ((SYSCTL_PRTIMER_R & 0x02) == 0) {}
     while ((SYSCTL_PRGPIO_R  & 0x02) == 0) {}
 
-    // Step 2: Disable Timer1B
     TIMER1_CTL_R &= ~0x0100;
 
-    // Step 3: 16-bit timer mode
     TIMER1_CFG_R = 0x04;
 
-    // Step 4: PWM mode (TBMR=2, TBAMS=1 -> 0x0A)
     TIMER1_TBMR_R = 0x0A;
 
-    // Step 5: Non-inverted output
     TIMER1_CTL_R &= ~0x4000;
 
-    // Step 6: Load period (320000 = 0x04E200)
-    TIMER1_TBILR_R = 0xE200; // low 16 bits
-    TIMER1_TBPR_R  = 0x04;   // upper 8 bits
+    TIMER1_TBILR_R = 0xE200;
+    TIMER1_TBPR_R  = 0x04;
 
-    // Step 7: Load starting match for 90 degrees
     current_match = servo_get_match_from_degrees(90);
     write_match(current_match);
     current_degrees = 90;
 
-    // Step 8: Configure PB5 as T1CCP1
     GPIO_PORTB_AFSEL_R |= 0x20;
-    GPIO_PORTB_PCTL_R  &= ~0x00F00000; // clear 4 bits for PB5
-    GPIO_PORTB_PCTL_R  |=  0x00700000; // set T1CCP1 (value 7)
+    GPIO_PORTB_PCTL_R  &= ~0x00F00000;
+    GPIO_PORTB_PCTL_R  |=  0x00700000;
     GPIO_PORTB_DEN_R   |= 0x20;
     GPIO_PORTB_DIR_R   |= 0x20;
 
-    // Step 9: Enable Timer1B
     TIMER1_CTL_R |= 0x0100;
 
     timer_waitMillis(500);
@@ -121,7 +98,7 @@ void servo_calibrate(void) {
     uint32_t captured_right = servo_min_match;
     uint32_t captured_left  = servo_max_match;
     uint8_t btn;
-    uint8_t phase = 0; // 0 = calibrate 0 deg, 1 = calibrate 180 deg
+    uint8_t phase = 0; 
     uint8_t done  = 0;
 
     current_match = servo_get_match_from_degrees(90);
