@@ -12,9 +12,7 @@ int main(void) {
     button_init();
     servo_init();
 
-    // =====================
     // CP1: Move servo through positions
-    // =====================
     lcd_printf("Moving to 90");
     servo_move(90);
     timer_waitMillis(1000);
@@ -32,9 +30,7 @@ int main(void) {
 
     while(1) {} // Hold at 90
 
-    // =====================
     // CP2: Button control
-    // =====================
     /*
     uint16_t degrees = 90;
     uint8_t ccw_direction = 1; // 1=CCW, 0=CW
@@ -78,10 +74,8 @@ int main(void) {
         timer_waitMillis(50);
     }
     */
-
-    // =====================
+    
     // CP3: Calibration
-    // =====================
     /*
     servo_calibrate();
     while (1) {
@@ -94,9 +88,7 @@ int main(void) {
     }
     */
 
-    // =====================
     // CP4: Scan with ping sensor
-    // =====================
     /*
     ping_init();
     int i;
